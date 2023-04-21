@@ -212,6 +212,8 @@ def get_extensions():
         print("Compiling in debug mode")
         extra_compile_args["cxx"].append("-g")
         extra_compile_args["cxx"].append("-O0")
+        extra_compile_args["cxx"].append("-fno-omit-frame-pointer")
+        extra_compile_args["cxx"].append("-mno-omit-leaf-frame-pointer")       
         if "nvcc" in extra_compile_args:
             # we have to remove "-OX" and "-g" flag if exists and append
             nvcc_flags = extra_compile_args["nvcc"]
