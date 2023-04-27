@@ -85,8 +85,8 @@ pip:
 From source:
 
 .. code:: bash
-
-    python setup.py install
+    .. added by Rajveer
+    DEBUG=1 python setup.py install
     # or, for OSX
     # MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py install
 
