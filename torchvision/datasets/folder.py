@@ -139,6 +139,7 @@ class DatasetFolder(VisionDataset):
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
         is_valid_file: Optional[Callable[[str], bool]] = None,
+        log_file: Optional[str] = None,
     ) -> None:
         super().__init__(root, transform=transform, target_transform=target_transform)
         classes, class_to_idx = self.find_classes(self.root)
@@ -151,6 +152,7 @@ class DatasetFolder(VisionDataset):
         self.class_to_idx = class_to_idx
         self.samples = samples
         self.targets = [s[1] for s in samples]
+        self.log_file = log_file
 
     @staticmethod
     def make_dataset(
@@ -226,12 +228,33 @@ class DatasetFolder(VisionDataset):
             tuple: (sample, target) where target is class_index of the target class.
         """
         path, target = self.samples[index]
+
+        if self.log_file:
+            import time
+            # measure loader time
+            start = time.perf_counter_ns()
+            log = ""
         sample = self.loader(path)
+        
+        # measure loader time in nanosec
+        if self.log_file:
+            end = time.perf_counter_ns()
+            log += f"Single image loader time: {end - start} ns\n"
+
+            # measure transform time
+            start = time.perf_counter_ns()
+        
         if self.transform is not None:
             sample = self.transform(sample)
+        
+        if self.log_file:
+            end = time.perf_counter_ns()
+            log += f"Single image transform time: {end - start} ns\n"
+            open(self.log_file, "a").write(log)
+
         if self.target_transform is not None:
             target = self.target_transform(target)
-
+        
         return sample, target
 
     def __len__(self) -> int:
@@ -305,6 +328,7 @@ class ImageFolder(DatasetFolder):
         target_transform: Optional[Callable] = None,
         loader: Callable[[str], Any] = default_loader,
         is_valid_file: Optional[Callable[[str], bool]] = None,
+        log_file: Optional[str] = None,
     ):
         super().__init__(
             root,
@@ -315,3 +339,4 @@ class ImageFolder(DatasetFolder):
             is_valid_file=is_valid_file,
         )
         self.imgs = self.samples
+        self.log_file = log_file
