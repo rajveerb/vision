@@ -89,31 +89,27 @@ class Compose:
         if not torch.jit.is_scripting() and not torch.jit.is_tracing():
             _log_api_usage_once(self)
         self.transforms = transforms
-        # file to store logs
         self.log_transform_elapsed_time = log_transform_elapsed_time
+
 
     def __call__(self, img):
         import time
         if self.log_transform_elapsed_time:
-            start_batch_time = time.time()
             log = ""
-
+        
         for t in self.transforms:
             # log individual transform's time
             if self.log_transform_elapsed_time:
-                start = time.time()
+                start = time.perf_counter_ns()
             img = t(img)
 
             if self.log_transform_elapsed_time:
-                end = time.time()
+                end = time.perf_counter_ns()
                 # log in file
-                log += (f"Transform {t.__class__.__name__} took {end - start} seconds\n")
+                log += (f"Transform {t.__class__.__name__}: {end - start} ns\n")
        
-        # log batch's time   
         if self.log_transform_elapsed_time:
-            end_batch_time = time.time()
-            log += (f"Batch took {end_batch_time - start_batch_time} seconds\n\n")
-            open(self.log_transform_elapsed_time,"w+").write(log)
+            open(self.log_transform_elapsed_time,"a+").write(log)
         
         return img
 
