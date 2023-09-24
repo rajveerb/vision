@@ -86,6 +86,9 @@ From source:
 
 .. code:: bash
     .. added by Rajveer
+    .. @Rajveer, use below command in your created conda environment
+    python setup.py install
+    .. @Rajveer, use below command only whne you want to preserve the frame pointers
     DEBUG=1 python setup.py install
     # or, for OSX
     # MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py install
