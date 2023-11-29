@@ -85,6 +85,7 @@ pip:
 From source:
 
 .. code:: bash
+
     .. added by Rajveer
     .. @Rajveer, use below command in your created conda environment
     python setup.py install
