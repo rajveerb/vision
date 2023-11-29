@@ -93,23 +93,28 @@ class Compose:
 
 
     def __call__(self, img):
-        import time
+        import time,psutil
+
+        # get process id using psutil
+        pid = psutil.Process().pid
+
         if self.log_transform_elapsed_time:
             log = ""
         
         for t in self.transforms:
             # log individual transform's time
             if self.log_transform_elapsed_time:
-                start = time.perf_counter_ns()
+                start = time.time_ns()
             img = t(img)
 
             if self.log_transform_elapsed_time:
-                end = time.perf_counter_ns()
+                end = time.time_ns()
                 # log in file
-                log += (f"Transform {t.__class__.__name__}: {end - start} ns\n")
+                log += (f"S{t.__class__.__name__},{start},{end - start}\n")
+                # d =   {"ph": "X", "cat": "user_annotation", "name":t.__class__.__name__ , "pid": pid, "tid": pid, "ts": start, "dur": end-start,"args": {}}
        
         if self.log_transform_elapsed_time:
-            open(self.log_transform_elapsed_time,"a+").write(log)
+            open(self.log_transform_elapsed_time+f'_worker_pid_{pid}',"a+").write(log)
         
         return img
 

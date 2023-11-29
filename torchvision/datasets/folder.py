@@ -230,27 +230,28 @@ class DatasetFolder(VisionDataset):
         path, target = self.samples[index]
 
         if self.log_file:
-            import time
+            import time,psutil
+            pid = psutil.Process().pid
             # measure loader time
-            start = time.perf_counter_ns()
+            start = time.time_ns()
             log = ""
         sample = self.loader(path)
         
         # measure loader time in nanosec
         if self.log_file:
-            end = time.perf_counter_ns()
-            log += f"Single image loader time: {end - start} ns\n"
+            end = time.time_ns()
+            log += f"SLoader,{start},{end - start}\n"
 
             # measure transform time
-            start = time.perf_counter_ns()
+            start = time.time_ns()
         
         if self.transform is not None:
             sample = self.transform(sample)
         
         if self.log_file:
-            end = time.perf_counter_ns()
-            log += f"Single image transform time: {end - start} ns\n"
-            open(self.log_file, "a").write(log)
+            end = time.time_ns()
+            log += f"STransform,{start},{end - start}\n"
+            open(self.log_file+f'_worker_pid_{pid}', "a").write(log)
 
         if self.target_transform is not None:
             target = self.target_transform(target)
