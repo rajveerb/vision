@@ -79,7 +79,7 @@ class DatasetFolder(data.Dataset):
         targets (list): The class_index value for each image in the dataset
     """
 
-    def __init__(self, root, loader, extensions, transform=None, target_transform=None):
+    def __init__(self, root, loader, extensions, transform=None, target_transform=None, log_file = None,):
         classes, class_to_idx = self._find_classes(root)
         samples = make_dataset(root, class_to_idx, extensions)
         if len(samples) == 0:
@@ -94,6 +94,8 @@ class DatasetFolder(data.Dataset):
         self.class_to_idx = class_to_idx
         self.samples = samples
         self.targets = [s[1] for s in samples]
+        self.log_file = log_file
+
 
         self.transform = transform
         self.target_transform = target_transform
@@ -129,9 +131,32 @@ class DatasetFolder(data.Dataset):
             tuple: (sample, target) where target is class_index of the target class.
         """
         path, target = self.samples[index]
+    
+        if self.log_file:
+            import time,psutil
+            pid = psutil.Process().pid
+            # measure loader time
+            start = time.time_ns()
+            log = ""
+        
         sample = self.loader(path)
+
+        # measure loader time in nanosec
+        if self.log_file:
+            end = time.time_ns()
+            log += f"SLoader,{start},{end - start}\n"
+
+            # measure transform time
+            start = time.time_ns()
+
         if self.transform is not None:
             sample = self.transform(sample)
+
+        if self.log_file:
+            end = time.time_ns()
+            log += f"STransform,{start},{end - start}\n"
+            open(self.log_file+f'_worker_pid_{pid}', "a").write(log)
+
         if self.target_transform is not None:
             target = self.target_transform(target)
 
@@ -203,8 +228,11 @@ class ImageFolder(DatasetFolder):
         imgs (list): List of (image path, class_index) tuples
     """
     def __init__(self, root, transform=None, target_transform=None,
-                 loader=default_loader):
+                 loader=default_loader,
+                 log_file = None):
         super(ImageFolder, self).__init__(root, loader, IMG_EXTENSIONS,
                                           transform=transform,
-                                          target_transform=target_transform)
+                                          target_transform=target_transform,
+                                          log_file = None)
         self.imgs = self.samples
+        self.log_file = log_file

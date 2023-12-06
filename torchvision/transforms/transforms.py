@@ -52,12 +52,34 @@ class Compose(object):
         >>> ])
     """
 
-    def __init__(self, transforms):
+    def __init__(self, transforms, log_transform_elapsed_time = None):
         self.transforms = transforms
+        self.log_transform_elapsed_time = log_transform_elapsed_time
 
     def __call__(self, img):
+        import time,psutil
+
+        # get process id using psutil
+        pid = psutil.Process().pid
+
+        if self.log_transform_elapsed_time:
+            log = ""
+
         for t in self.transforms:
+            # log individual transform's time
+            if self.log_transform_elapsed_time:
+                start = time.time_ns()
             img = t(img)
+
+            if self.log_transform_elapsed_time:
+                end = time.time_ns()
+                # log in file
+                log += (f"S{t.__class__.__name__},{start},{end - start}\n")
+                # d =   {"ph": "X", "cat": "user_annotation", "name":t.__class__.__name__ , "pid": pid, "tid": pid, "ts": start, "dur": end-start,"args": {}}
+
+        if self.log_transform_elapsed_time:
+            open(self.log_transform_elapsed_time+f'_worker_pid_{pid}',"a+").write(log)
+        
         return img
 
     def __repr__(self):
