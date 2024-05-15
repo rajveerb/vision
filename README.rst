@@ -34,7 +34,6 @@ pip:
 From source:
 
 .. code:: bash
-    To make sure mapping is captured correctly
     conda install -y pillow==8.4.0
     python setup.py install
 
