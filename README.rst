@@ -33,7 +33,7 @@ pip:
 
 From source:
 
-.. code:: bash
+.. code-block:: bash
     conda install -y pillow==8.4.0
     python setup.py install
 
