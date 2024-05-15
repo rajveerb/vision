@@ -33,10 +33,9 @@ pip:
 
 From source:
 
-.. code-block:: bash
-    conda install -y pillow==8.4.0
-    python setup.py install
+    `conda install -y pillow==8.4.0`
 
+    `python setup.py install`
 
 Image Backend
 =============
